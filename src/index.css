@@ -1,0 +1,213 @@
+@import 'tailwindcss';
+
+/*
+ * Tema industrial de alto contraste: la app se lee en bocamina, con guantes,
+ * polvo y poca luz. Fondo oscuro por defecto, acentos grandes y saturados
+ * para los tres niveles de alerta (normal / precaución / alarma).
+ */
+@theme {
+  --color-background: oklch(14% 0.022 215);
+  --color-surface: oklch(18.5% 0.025 213);
+  --color-surface-raised: oklch(23.5% 0.028 211);
+  --color-foreground: oklch(96% 0.012 92);
+  --color-muted-foreground: oklch(73% 0.025 205);
+  --color-border: oklch(33% 0.032 207);
+
+  --color-primary: oklch(79% 0.155 78);
+  --color-primary-foreground: oklch(17% 0.03 70);
+
+  /* Niveles de alerta — ver src/config/umbrales.js */
+  --color-normal: oklch(72% 0.17 155);
+  --color-normal-foreground: oklch(14% 0.03 155);
+  --color-precaucion: oklch(78% 0.16 80);
+  --color-precaucion-foreground: oklch(14% 0.03 80);
+  /* L subido de 62%→72% y C de 0.22→0.17 (mismo hue 25°): al 62% original,
+     text-alarma caía a 3.41:1 en su peor uso real (badge en el drawer del
+     mapa, sobre bg-surface-raised) — bajo el 4.5:1 que exige WCAG 1.4.3
+     para texto normal. Verificado con luminancia sRGB real, no con L de
+     OKLCH: ver contraste WCAG 1.4.3 en el historial del proyecto. */
+  --color-alarma: oklch(72% 0.17 25);
+  --color-alarma-foreground: oklch(14% 0.03 25);
+  --color-sin-monitorear: oklch(55% 0.01 260);
+  --color-sin-monitorear-foreground: oklch(97% 0.005 260);
+
+  --color-offline: oklch(70% 0.18 55);
+
+  /* Series analíticas y semántica cartográfica. No reutilizar colores de
+     estado: una galería de retorno no es, por sí misma, una alarma. */
+  --color-chart-retorno-inicio: #0f8b8d;
+  --color-chart-retorno-fin: #f0b44d;
+  --color-chart-entrada: #75c4c3;
+  --color-mapa-entrada: #2563eb;
+  --color-mapa-retorno: #ef4444;
+  --color-mapa-ducto: #f97316;
+
+  /* Colores de marca — únicamente para el logo (isotipo/lockup), nunca para
+     UI. --color-brand-ambar queda deliberadamente más anaranjado (H65) que
+     --color-precaucion (H80, más amarillo) para que nunca se confundan:
+     si algún componente de UI empieza a usar brand-ambar, revisar por qué —
+     probablemente debería ser --color-precaucion. */
+  --color-brand-teal: oklch(49% 0.085 195);
+  --color-brand-ambar: oklch(79% 0.155 78);
+  --color-brand-ambar-deep: oklch(66% 0.16 67);
+  --color-brand-lamp: oklch(94% 0.05 85);
+
+  /* Curvas con más "punch" que los ease-* nativos del navegador (Emil
+     Kowalski). --ease-out sobreescribe el ease-out por defecto de Tailwind,
+     así que toda utilidad `ease-out` ya existente en el proyecto la hereda
+     sin cambiar de nombre. --ease-drawer es la curva de arrastre tipo iOS
+     (Vaul/Ionic), solo para el drawer de PanelNodo. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --font-sans: Aptos, 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: Bahnschrift, 'DIN Alternate', 'Arial Narrow', Aptos, sans-serif;
+
+  --animate-enter: enter 0.45s var(--ease-out) both;
+
+  @keyframes enter {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/*
+ * Área de toque mínima ergonómica (44px) para controles interactivos: se
+ * opera con guantes, polvo y poca luz en bocamina. Todo control pequeño
+ * (botón icono, pill, link secundario) debe usar esta utilidad en vez de
+ * reinventar su propio padding, para que Fase 3/4 la hereden sin repetir
+ * el problema.
+ */
+@utility tap-target {
+  display: inline-flex;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  align-items: center;
+  justify-content: center;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    background:
+      radial-gradient(circle at 82% -18%, color-mix(in oklab, var(--color-brand-teal) 15%, transparent), transparent 36rem),
+      radial-gradient(circle at 8% 115%, color-mix(in oklab, var(--color-brand-ambar) 7%, transparent), transparent 30rem),
+      var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  button, a { -webkit-tap-highlight-color: transparent; }
+
+  h1, h2, h3, strong, button, nav {
+    font-family: var(--font-display);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+
+  #root {
+    /* Sin min-height acá a propósito: la página debe medir lo que mide su
+       contenido, ni más ni menos. El nav inferior es `fixed` (no depende
+       del alto del documento para quedar pegado abajo) y el fondo oscuro
+       de `body` ya pinta todo el lienzo aunque el contenido sea más corto
+       que la pantalla (así lo maneja el navegador por spec, propagando el
+       background de body al viewport). Forzar 100dvh acá solo estiraba
+       páginas cortas y dejaba "scrollable" un hueco vacío del mismo color
+       — se notaba como que la página nunca se ajustaba al celular. */
+    display: flex;
+    flex-direction: column;
+    /* El ancho raíz sigue al viewport sin ocultar desbordamientos: cualquier
+       componente que se salga debe corregirse en origen y será detectable
+       durante las pruebas responsive. */
+    max-width: 100%;
+  }
+
+  /* Los números críticos (lecturas de gas, probabilidad) deben leerse a
+     distancia y con poca luz: tabular, grandes, sin ambigüedad de glifos. */
+  .num-critico {
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+    font-weight: 650;
+    letter-spacing: -0.025em;
+  }
+}
+
+@layer components {
+  .skeleton {
+    background: linear-gradient(100deg, color-mix(in oklab, var(--color-surface-raised) 82%, transparent) 35%, color-mix(in oklab, var(--color-foreground) 10%, var(--color-surface-raised)) 50%, color-mix(in oklab, var(--color-surface-raised) 82%, transparent) 65%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.8s ease-in-out infinite;
+  }
+
+  @keyframes skeleton-shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+
+  .panel {
+    border: 1px solid color-mix(in oklab, var(--color-border) 78%, transparent);
+    border-radius: 0.875rem;
+    background: linear-gradient(145deg, color-mix(in oklab, var(--color-surface-raised) 30%, var(--color-surface)), var(--color-surface));
+    box-shadow: 0 14px 38px rgb(0 8 12 / 0.22), inset 0 1px rgb(255 255 255 / 0.025);
+  }
+
+  .panel-interactive {
+    transition: transform 180ms var(--ease-out), border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .panel-interactive:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklab, var(--color-primary) 35%, var(--color-border));
+    box-shadow: 0 22px 55px rgb(0 0 0 / 0.25);
+  }
+
+  .eyebrow {
+    font-family: var(--font-display);
+    font-size: .6875rem;
+    font-weight: 700;
+    letter-spacing: .105em;
+    text-transform: uppercase;
+    color: var(--color-muted-foreground);
+  }
+
+  .brand-gradient {
+    background: linear-gradient(105deg, var(--color-brand-ambar-deep), var(--color-brand-ambar) 58%, var(--color-brand-lamp));
+  }
+}
+
+/*
+ * Patrón global de movimiento reducido: cualquier transición o @keyframes
+ * CSS que se agregue después (animaciones tipo Emil, hover, etc.) queda
+ * cubierta automáticamente — colapsa la duración en vez de eliminar la
+ * transición, así el cambio de estado sigue siendo visible, solo que sin
+ * el movimiento. Esto NO alcanza animaciones SMIL de SVG (<animate>): esas
+ * se controlan en JS con `useReduceMovimiento` (src/lib), ver PlanoMina.jsx.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 80ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .panel-interactive:hover {
+    transform: none;
+  }
+
+  .skeleton { animation: none; background: var(--color-surface-raised); }
+}

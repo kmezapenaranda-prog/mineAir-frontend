@@ -1,0 +1,11 @@
+**
+!package.json
+!package-lock.json
+!index.html
+!vite.config.js
+!src/**
+!public/**
+!deploy/
+!deploy/google-cloud/
+!deploy/google-cloud/Dockerfile.web
+!deploy/google-cloud/nginx.conf

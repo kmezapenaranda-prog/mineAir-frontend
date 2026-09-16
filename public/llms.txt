@@ -1,0 +1,17 @@
+# MineAIr
+
+MineAIr monitorea la atmósfera de minas subterráneas y ayuda a anticipar eventos de CH₄ y CO con datos contextualizados.
+
+## Producto
+
+- [Panel](/): estado atmosférico y alarmas operativas.
+- [Mapa](/mapa): plano esquemático, nodos y repetidores.
+- [Predicciones](/predicciones): probabilidades para CH₄ y CO con factores trazables.
+
+## Operación
+
+- [Registro](/registro): cierre de turno y variables operativas.
+- [Reportes](/reportes): mediciones, excedencias y acciones registradas.
+- [Configuración](/configuracion): umbrales, dispositivos y ajustes de la mina.
+
+Todos los datos visibles en la demostración se identifican como simulados cuando corresponde. La predicción complementa la reacción operacional y no sustituye la medición real ni los procedimientos de seguridad.

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+    
+    <path d="M40,102 C40,92 44,84 55,80 C58,55 76,42 100,42 C124,42 142,55 145,80 C156,84 160,92 160,102 C148,108 132,110 118,108 C110,113 105,116 100,116 C95,116 90,113 82,108 C68,110 52,108 40,102 Z" fill="#006768" />
+    <rect x="93" y="44" width="14" height="64" rx="7" fill="#fff" opacity="0.12" />
+    <line x1="60" y1="58" x2="78" y2="50" stroke="#EB8A00" stroke-width="1.5" stroke-linecap="round" opacity="0.9" /><line x1="78" y1="50" x2="85" y2="68" stroke="#EB8A00" stroke-width="1.5" stroke-linecap="round" opacity="0.9" /><line x1="60" y1="58" x2="58" y2="78" stroke="#EB8A00" stroke-width="1.5" stroke-linecap="round" opacity="0.9" /><line x1="58" y1="78" x2="70" y2="90" stroke="#EB8A00" stroke-width="1.5" stroke-linecap="round" opacity="0.9" /><line x1="70" y1="90" x2="54" y2="92" stroke="#EB8A00" stroke-width="1.5" stroke-linecap="round" opacity="0.9" /><line x1="85" y1="68" x2="70" y2="90" stroke="#EB8A00" stroke-width="1.5" stroke-linecap="round" opacity="0.9" /><line x1="140" y1="58" x2="122" y2="50" stroke="#EB8A00" stroke-width="1.5" stroke-linecap="round" opacity="0.9" /><line x1="122" y1="50" x2="115" y2="68" stroke="#EB8A00" stroke-width="1.5" stroke-linecap="round" opacity="0.9" /><line x1="140" y1="58" x2="142" y2="78" stroke="#EB8A00" stroke-width="1.5" stroke-linecap="round" opacity="0.9" /><line x1="142" y1="78" x2="130" y2="90" stroke="#EB8A00" stroke-width="1.5" stroke-linecap="round" opacity="0.9" /><line x1="130" y1="90" x2="146" y2="92" stroke="#EB8A00" stroke-width="1.5" stroke-linecap="round" opacity="0.9" /><line x1="115" y1="68" x2="130" y2="90" stroke="#EB8A00" stroke-width="1.5" stroke-linecap="round" opacity="0.9" />
+    <circle cx="60" cy="58" r="3.2" fill="#EB8A00" /><circle cx="78" cy="50" r="3.2" fill="#EB8A00" /><circle cx="85" cy="68" r="3.2" fill="#EB8A00" /><circle cx="58" cy="78" r="3.2" fill="#EB8A00" /><circle cx="70" cy="90" r="3.2" fill="#EB8A00" /><circle cx="54" cy="92" r="3.2" fill="#EB8A00" /><circle cx="140" cy="58" r="3.2" fill="#EB8A00" /><circle cx="122" cy="50" r="3.2" fill="#EB8A00" /><circle cx="115" cy="68" r="3.2" fill="#EB8A00" /><circle cx="142" cy="78" r="3.2" fill="#EB8A00" /><circle cx="130" cy="90" r="3.2" fill="#EB8A00" /><circle cx="146" cy="92" r="3.2" fill="#EB8A00" />
+    <rect x="86" y="98" width="28" height="16" rx="4" fill="#F3F5F9" />
+    <defs>
+      <radialGradient id="lampara" cx="40%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#FBE9C6" />
+        <stop offset="100%" stop-color="#DB6D00" />
+      </radialGradient>
+    </defs>
+    <circle cx="100" cy="110" r="15" fill="url(#lampara)" />
+    <ellipse cx="95" cy="104" rx="4" ry="3" fill="#FBE9C6" opacity="0.6" />
+    <path d="M40,128 c22,-14 38,-14 60,0 s38,14 60,0" fill="none" stroke="#EB8A00" stroke-width="7" stroke-linecap="round" opacity="1" /><path d="M40,140 c22,-11 38,-11 60,0 s38,11 60,0" fill="none" stroke="#EB8A00" stroke-width="7" stroke-linecap="round" opacity="0.7" /><path d="M40,152 c22,-9 38,-9 60,0 s38,9 60,0" fill="none" stroke="#EB8A00" stroke-width="7" stroke-linecap="round" opacity="0.45" />
+  </svg>
