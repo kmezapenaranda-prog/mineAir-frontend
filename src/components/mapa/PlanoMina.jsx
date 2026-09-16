@@ -226,9 +226,15 @@ export default function PlanoMina({ nodos, repetidores, seleccionado, onSeleccio
   const svgRef = useRef(null)
   const { transform, handlers, acercar, alejar, reiniciar, conZoom, aCoordenadasVB, enGesto } = usePanZoom(svgRef)
   const reduceMovimiento = useReduceMovimiento()
-  const elementosVisibles = mapa.elementos.filter((elemento) =>
-    (!categoriasVisibles || categoriasVisibles.includes(elemento.categoria)) &&
-    (!capasVisibles || capasVisibles.includes(capaDeElemento(elemento))))
+  const elementosVisibles = mapa.elementos.filter((elemento) => {
+    const capa = capaDeElemento(elemento)
+    // El plano interno y las referencias sin capa DXF (entrada, retorno,
+    // sellada, etc.) no pertenecen a ninguno de los botones de capas. Esos
+    // botones solo deben filtrar elementos que sí tienen una capa reconocida;
+    // de otro modo el plano base queda vacío y sobreviven solo los marcadores.
+    return (!categoriasVisibles || categoriasVisibles.includes(elemento.categoria)) &&
+      (!capasVisibles || capa === null || capasVisibles.includes(capa))
+  })
   // Solo se dibujan nodos/repetidores con posición conocida en este plano:
   // uno recién dado de alta o importado de un DXF nuevo no tiene
   // coordenadas todavía (`mapa.nodos[id]`/`mapa.repetidores[id]` vacío) —

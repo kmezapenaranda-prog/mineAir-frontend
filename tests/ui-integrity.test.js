@@ -35,6 +35,11 @@ test('los marcadores SVG concentran semántica y teclado en el elemento enfocabl
   assert.equal((contenido.match(/onKeyDown=\{/g) ?? []).length, 2)
 })
 
+test('las capas no ocultan los elementos base que no vienen de un DXF', async () => {
+  const contenido = await readFile(new URL('../src/components/mapa/PlanoMina.jsx', import.meta.url), 'utf8')
+  assert.match(contenido, /capa === null \|\| capasVisibles\.includes\(capa\)/)
+})
+
 test('la gráfica diferencial ofrece datos equivalentes fuera del SVG', async () => {
   const contenido = await readFile(new URL('../src/components/dashboard/DiferencialCh4.jsx', import.meta.url), 'utf8')
   assert.match(contenido, /aria-hidden="true"/)
