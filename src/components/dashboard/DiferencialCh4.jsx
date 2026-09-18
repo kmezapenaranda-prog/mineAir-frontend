@@ -13,8 +13,8 @@ function TooltipCh4({ active, payload, label }) {
   return (
     <div className={TOOLTIP_CLASS}>
       <p className="mb-2 font-semibold text-foreground">{label}</p>
-      <p className="text-primary">S1 Retorno <b>{valores.retorno?.toFixed(3)} %</b></p>
-      <p className="text-chart-entrada">S2 Entrada <b>{valores.entrada?.toFixed(3)} %</b></p>
+      <p className="text-primary">{retornoNodo?.node_id ?? 'Retorno'} Retorno <b>{valores.retorno?.toFixed(3)} %</b></p>
+      <p className="text-chart-entrada">{entradaNodo?.node_id ?? 'Entrada'} Entrada <b>{valores.entrada?.toFixed(3)} %</b></p>
       {delta != null ? <p className="mt-2 border-t border-border pt-2 text-foreground">Δ <b>{delta.toFixed(3)} %</b></p> : null}
     </div>
   )
@@ -46,12 +46,13 @@ function SelectorRango({ rango, onRango }) {
   )
 }
 
-export default function DiferencialCh4({ retorno, entrada, rango, onRango }) {
+export default function DiferencialCh4({ retorno, entrada, rango, onRango, retornoNodo, entradaNodo }) {
   const datos = useMemo(() => retorno.map((lectura, i) => ({
     hora: new Date(lectura.timestamp).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
     retorno: lectura.estado.sensor_ok ? lectura.gases.ch4_pct : null,
     entrada: entrada[i]?.estado.sensor_ok ? entrada[i]?.gases.ch4_pct : null,
   })), [retorno, entrada])
+  const sinDatos = datos.length === 0 || !datos.some((dato) => dato.retorno != null || dato.entrada != null)
   const ultimo = datos.at(-1)
   const delta = ultimo?.retorno != null && ultimo?.entrada != null ? ultimo.retorno - ultimo.entrada : null
 
@@ -62,8 +63,8 @@ export default function DiferencialCh4({ retorno, entrada, rango, onRango }) {
           <p className="eyebrow">Diferencial atmosférico</p>
           <h2 className="mt-1 text-lg font-bold">CH₄ · Retorno vs Entrada</h2>
           <div className="mt-2 flex flex-wrap gap-4 text-xs text-muted-foreground">
-            <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-primary" />S1 Retorno</span>
-            <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-chart-entrada" />S2 Entrada</span>
+            <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-primary" />{retornoNodo?.node_id ?? 'Retorno'} Retorno</span>
+            <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-chart-entrada" />{entradaNodo?.node_id ?? 'Entrada'} Entrada</span>
           </div>
         </div>
         <SelectorRango rango={rango} onRango={onRango} />
@@ -75,6 +76,7 @@ export default function DiferencialCh4({ retorno, entrada, rango, onRango }) {
         </strong>
       </div>
       <div className="h-64 min-w-0 md:h-72" aria-hidden="true">
+        {sinDatos ? <p className="flex h-full items-center justify-center text-sm text-muted-foreground">No hay lecturas de CH₄ en el período seleccionado.</p> : (
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={datos} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
             <defs>
@@ -88,7 +90,7 @@ export default function DiferencialCh4({ retorno, entrada, rango, onRango }) {
             <Line type="monotone" dataKey="retorno" stroke="url(#lineRetorno)" strokeWidth={3} dot={false} connectNulls={false} isAnimationActive={false} />
             <Line type="monotone" dataKey="entrada" stroke="var(--color-chart-entrada)" strokeWidth={2} dot={false} connectNulls={false} isAnimationActive={false} />
           </LineChart>
-        </ResponsiveContainer>
+        </ResponsiveContainer>)}
       </div>
       <div className="sr-only">
         <table>
@@ -96,8 +98,8 @@ export default function DiferencialCh4({ retorno, entrada, rango, onRango }) {
           <thead>
             <tr>
               <th scope="col">Hora</th>
-              <th scope="col">S1 Retorno</th>
-              <th scope="col">S2 Entrada</th>
+              <th scope="col">{retornoNodo?.node_id ?? 'Retorno'} Retorno</th>
+              <th scope="col">{entradaNodo?.node_id ?? 'Entrada'} Entrada</th>
               <th scope="col">Diferencial</th>
             </tr>
           </thead>

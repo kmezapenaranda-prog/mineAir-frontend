@@ -23,7 +23,9 @@ async function solicitar(path, opciones) {
 }
 
 async function getNodos() {
-  return solicitar('/nodos')
+  const nodos = await solicitar('/nodos')
+  // Un dispositivo inactivo no forma parte de ninguna vista operativa.
+  return (Array.isArray(nodos) ? nodos : []).filter((nodo) => nodo?.activo !== false && nodo?.estado !== 'inactivo')
 }
 
 async function getTelemetria(nodeId, desde, hasta) {
@@ -36,7 +38,8 @@ async function getTelemetria(nodeId, desde, hasta) {
 
 async function getPredicciones(filtros = {}) {
   const { nivel, ...filtrosServicio } = filtros
-  const conjuntas = await solicitar('/riesgo-conjunto')
+  const [conjuntas, nodos] = await Promise.all([solicitar('/riesgo-conjunto'), getNodos()])
+  const activos = new Set(nodos.map((nodo) => nodo.node_id))
   const predicciones = conjuntas.map((p) => ({
     ...p,
     gas: 'riesgo_conjunto',
@@ -48,7 +51,7 @@ async function getPredicciones(filtros = {}) {
       ? 'Verificar inmediatamente las mediciones en sitio y aplicar el protocolo de seguridad.'
       : 'Mantener el monitoreo y verificar la medición si cambia el nivel de alerta.',
   })).map((p) => ({ ...p, nivel: p.nivel === 'atencion' ? 'precaucion' : p.nivel === 'evacuar' ? 'alarma' : p.nivel }))
-  return filtrarPredicciones(predicciones.map(presentarPrediccion), { ...filtrosServicio, nivel })
+  return filtrarPredicciones(predicciones.map(presentarPrediccion).filter((prediccion) => activos.has(prediccion.node_id)), { ...filtrosServicio, nivel })
 }
 
 async function getRiesgoConjunto() {

@@ -3,7 +3,7 @@ import { useCargaPeriodica } from '../lib/useCargaPeriodica.js'
 import ErrorCarga from '../components/ErrorCarga.jsx'
 import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getNodos, getPredicciones, getTelemetria, origenDatos } from '../data/index.js'
+import { getNodos, getPredicciones, getTelemetria } from '../data/index.js'
 import { UMBRALES_DEFAULT, NIVEL, clasificarLectura, proximidadAlarma } from '../config/umbrales.js'
 import { nivelDeNodo, peorNivel } from '../lib/nivelNodo.js'
 import { distribucionEstadoNodos, picosPorTurno } from '../lib/analitica.js'
@@ -76,9 +76,9 @@ function PrediccionPrioritaria({ prediccion }) {
   </section>
 }
 
-function EstadoGases({ lectura }) {
+function EstadoGases({ lectura, nodo }) {
   return <section className="panel p-4 md:p-5">
-    <div className="mb-4"><p className="eyebrow">Estado atmosférico</p><h2 className="mt-1 text-lg font-bold">Lecturas en retorno · S1</h2></div>
+    <div className="mb-4"><p className="eyebrow">Estado atmosférico</p><h2 className="mt-1 text-lg font-bold">Lecturas en retorno · {nodo?.ubicacion ?? 'sin dispositivo activo'}</h2></div>
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
       {GASES.map(([gas, campo], i) => {
         const umbral = UMBRALES_DEFAULT[gas]
@@ -115,17 +115,21 @@ export default function Dashboard() {
   const cargaPredicciones = useCargaPeriodica(getPredicciones)
   const cargarSeries = useCallback(async () => {
     const hasta = Date.now(), desde = hasta - rango * 3600000
+    const nodosActivos = (await getNodos()).filter((n) => ['fijo', 'casco'].includes(n.node_type))
+    const retornoNodo = nodosActivos.find((n) => n.esRetorno) ?? nodosActivos[0]
+    const entradaNodo = nodosActivos.find((n) => n.node_id !== retornoNodo?.node_id && !n.esRetorno) ?? nodosActivos.find((n) => n.node_id !== retornoNodo?.node_id)
     const [retorno, entrada] = await Promise.all([
-      getTelemetria('S1', desde, hasta), getTelemetria('S2', desde, hasta),
+      retornoNodo ? getTelemetria(retornoNodo.node_id, desde, hasta) : Promise.resolve([]),
+      entradaNodo ? getTelemetria(entradaNodo.node_id, desde, hasta) : Promise.resolve([]),
     ])
-    return { retorno, entrada }
+    return { retorno, entrada, retornoNodo, entradaNodo }
   }, [rango])
   const cargaSeries = useCargaPeriodica(cargarSeries)
   const cargarPicos = useCallback(async () => picosPorTurno(await getNodos()), [])
   const cargaPicos = useCargaPeriodica(cargarPicos, 5 * 60000)
   const nodos = cargaNodos.datos
   const predicciones = cargaPredicciones.datos ?? []
-  const series = cargaSeries.datos ?? { retorno: [], entrada: [] }
+  const series = cargaSeries.datos ?? { retorno: [], entrada: [], retornoNodo: null, entradaNodo: null }
   const picos = cargaPicos.datos
   const error = cargaNodos.error
   if (!nodos) return cargaNodos.error
@@ -137,7 +141,8 @@ export default function Dashboard() {
   const prioridad = predicciones.reduce((max, p) => !max || p.probabilidad > max.probabilidad ? p : max, null)
   const sinComunicacion = nodos.filter((n) => !lecturaVigente(n.ultima_lectura))
   const alarmasLocales = nodos.filter((n) => n.ultima_lectura?.alarma_local?.activa).length
-  const lecturaS1 = nodos.find((n) => n.node_id === 'S1')?.ultima_lectura
+  const nodoRetorno = gas.find((n) => n.esRetorno) ?? gas[0]
+  const lecturaRetorno = nodoRetorno?.ultima_lectura
   const conectados = nodos.length - sinComunicacion.length
 
   return <div className="flex flex-col gap-4 animate-enter">
@@ -167,7 +172,7 @@ export default function Dashboard() {
       <Kpi
         etiqueta="Nodos"
         valor={<><AnimatedNumber value={conectados} /> / {nodos.length}</>}
-        detalle={`${origenDatos === 'mock' ? 'Datos simulados' : 'Datos del servicio de borde'}${sinComunicacion.length ? ` · ${sinComunicacion.length} sin comunicación` : ''}`}
+        detalle={sinComunicacion.length ? (sinComunicacion.length + ' sin comunicación') : 'Solo dispositivos activos'}
         nivel={sinComunicacion.length ? NIVEL.PRECAUCION : NIVEL.NORMAL}
         icono={IconoRed}
         retraso={120}
@@ -200,6 +205,6 @@ export default function Dashboard() {
         <p className="text-xs text-muted-foreground">Picos actualizados: {cargaPicos.recibidoEn ? new Date(cargaPicos.recibidoEn).toLocaleTimeString('es-CO') : 'pendiente'}</p>
       </div>
     </section>
-    <EstadoGases lectura={lecturaS1} />
+    <EstadoGases lectura={lecturaRetorno} nodo={nodoRetorno} />
   </div>
 }
