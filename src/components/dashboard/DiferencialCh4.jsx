@@ -13,8 +13,8 @@ function TooltipCh4({ active, payload, label }) {
   return (
     <div className={TOOLTIP_CLASS}>
       <p className="mb-2 font-semibold text-foreground">{label}</p>
-      <p className="text-primary">{retornoNodo?.node_id ?? 'Retorno'} Retorno <b>{valores.retorno?.toFixed(3)} %</b></p>
-      <p className="text-chart-entrada">{entradaNodo?.node_id ?? 'Entrada'} Entrada <b>{valores.entrada?.toFixed(3)} %</b></p>
+      <p className="text-primary">Retorno <b>{valores.retorno?.toFixed(3)} %</b></p>
+      <p className="text-chart-entrada">Entrada <b>{valores.entrada?.toFixed(3)} %</b></p>
       {delta != null ? <p className="mt-2 border-t border-border pt-2 text-foreground">Δ <b>{delta.toFixed(3)} %</b></p> : null}
     </div>
   )
