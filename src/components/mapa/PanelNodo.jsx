@@ -12,14 +12,10 @@ function FilaGas({ gas, nodo }) {
   const umbral = UMBRALES_DEFAULT[gas]
   const campo = umbral.unidad === 'pct' ? `${gas}_pct` : `${gas}_ppm`
   const valor = lecturaVigente(nodo.ultima_lectura) ? nodo.ultima_lectura.gases[campo] : null
-  const sinEquipo = nodo.node_type === 'casco' && gas === 'co2'
-
   return (
     <li className="flex items-center justify-between py-1 text-sm">
       <span className="text-muted-foreground">{umbral.etiqueta}</span>
-      {sinEquipo ? (
-        <span className="text-xs text-muted-foreground">No equipado</span>
-      ) : (
+      {
         <span className="flex items-center gap-2">
           <span className="num-critico">
             {valor == null ? '—' : valor}
@@ -27,7 +23,7 @@ function FilaGas({ gas, nodo }) {
           </span>
           <NivelBadge nivel={clasificarLectura(gas, valor)} />
         </span>
-      )}
+      }
     </li>
   )
 }
@@ -182,11 +178,21 @@ export default function PanelNodo({ tipo, entidad, onCerrar }) {
                 </p>
               </div>
             ) : (
-              <ul className="divide-y divide-border">
-                {GASES_RESUMEN.map((gas) => (
-                  <FilaGas key={gas} gas={gas} nodo={entidadMostrada} />
-                ))}
-              </ul>
+              <>
+                <ul className="divide-y divide-border">
+                  {GASES_RESUMEN.map((gas) => (
+                    <FilaGas key={gas} gas={gas} nodo={entidadMostrada} />
+                  ))}
+                </ul>
+                <p className="text-sm text-muted-foreground">
+                  Presión barométrica:{' '}
+                  <b className="text-foreground">
+                    {entidadMostrada.ultima_lectura.ambiente?.presion_hpa == null
+                      ? '—'
+                      : `${Number(entidadMostrada.ultima_lectura.ambiente.presion_hpa).toFixed(1)} hPa`}
+                  </b>
+                </p>
+              </>
             )}
 
             <p className="text-xs text-muted-foreground">

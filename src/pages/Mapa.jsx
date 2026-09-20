@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { getNodos, getRepetidores, origenDatos } from '../data/index.js'
 import { useCargaPeriodica } from '../lib/useCargaPeriodica.js'
 import ErrorCarga from '../components/ErrorCarga.jsx'
@@ -6,7 +6,7 @@ import { nivelDeNodo } from '../lib/nivelNodo.js'
 import { NIVEL } from '../config/umbrales.js'
 import PlanoMina from '../components/mapa/PlanoMina.jsx'
 import PanelNodo from '../components/mapa/PanelNodo.jsx'
-import { getMapaActivo, posicionarNodo, posicionarRepetidor } from '../config/mapaStore.js'
+import { getMapaActivo, posicionarNodo, posicionarRepetidor, sincronizarMapaActivo } from '../config/mapaStore.js'
 import { useSearchParams } from 'react-router-dom'
 import { CAPAS_MAPA } from '../config/capasMapa.js'
 
@@ -39,6 +39,14 @@ export default function Mapa() {
   const [seleccionado, setSeleccionado] = useState(null)
   const [capasVisibles, setCapasVisibles] = useState(() => CAPAS_MAPA.map((capa) => capa.id))
   const [etiquetasVisibles, setEtiquetasVisibles] = useState(false)
+
+  useEffect(() => {
+    let activo = true
+    void sincronizarMapaActivo().then((remoto) => {
+      if (activo && remoto) setMapa(remoto)
+    })
+    return () => { activo = false }
+  }, [])
 
   function colocar(posicion) {
     if (!aColocar) return

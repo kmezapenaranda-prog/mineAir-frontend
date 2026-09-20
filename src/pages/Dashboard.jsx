@@ -77,6 +77,7 @@ function PrediccionPrioritaria({ prediccion }) {
 }
 
 function EstadoGases({ lectura, nodo }) {
+  const presion = lecturaVigente(lectura) ? lectura.ambiente?.presion_hpa : null
   return <section className="panel p-4 md:p-5">
     <div className="mb-4"><p className="eyebrow">Estado atmosférico</p><h2 className="mt-1 text-lg font-bold">Lecturas en retorno · {nodo?.ubicacion ?? 'sin dispositivo activo'}</h2></div>
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
@@ -105,6 +106,13 @@ function EstadoGases({ lectura, nodo }) {
           {gas === 'co2' ? <p title="Sensor SCD41: útil para el modelo, no equivale a una alarma minera certificada." className="mt-1 text-[9px] leading-3 text-muted-foreground">Dato predictivo · no certificado</p> : null}
         </article>
       })}
+    </div>
+    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+      <article className="rounded-xl border border-border/60 bg-background/35 p-3">
+        <b>Presión barométrica</b>
+        <p className="num-critico mt-3 text-lg">{presion == null ? '—' : `${Number(presion).toFixed(1)} hPa`}</p>
+        <p className="mt-2 text-[10px] text-muted-foreground">Lectura real del sensor BME280</p>
+      </article>
     </div>
   </section>
 }
