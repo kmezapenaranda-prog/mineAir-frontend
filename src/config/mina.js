@@ -5,6 +5,8 @@
  * cambiar los frentes acá los propaga automáticamente al formulario.
  */
 const STORAGE_KEY = 'mineair.config_mina.v1'
+const CONFIG_API = import.meta.env?.VITE_EDGE_API_URL ?? 'https://mineair-backend-production.up.railway.app/api'
+let ultimaPublicacion = Promise.resolve()
 
 const DATOS_MINA_DEFECTO = Object.freeze({
   nombre: 'Mina San Judas',
@@ -51,18 +53,56 @@ function leer() {
   }
 }
 
-function escribir(datos) {
+function escribir(datos, publicar = true) {
   if (!storageDisponible()) return
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(datos))
   } catch {
     // Sesión sin persistencia entre recargas — el registro en curso sigue funcionando.
   }
+  if (publicar) ultimaPublicacion = publicarConfiguracion(datos)
+}
+
+async function publicarConfiguracion(datos) {
+  try {
+    const respuesta = await fetch(`${CONFIG_API}/configuracion`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mina: datos }),
+      signal: AbortSignal.timeout(15000),
+    })
+    if (!respuesta.ok) throw new Error(`No se pudo sincronizar la configuraciÃ³n (${respuesta.status})`)
+  } catch {
+    // La copia local permite continuar sin red; se reintenta al guardar.
+  }
 }
 
 let datosMina = leer()
 
 export function getDatosMina() {
+  return datosMina
+}
+
+export async function sincronizarDatosMina() {
+  await ultimaPublicacion
+  try {
+    const respuesta = await fetch(`${CONFIG_API}/configuracion`, { signal: AbortSignal.timeout(15000) })
+    if (!respuesta.ok) return datosMina
+    const remoto = (await respuesta.json()).configuracion?.mina
+    if (!remoto || typeof remoto !== 'object') return datosMina
+    datosMina = {
+      nombre: remoto.nombre ?? datosMina.nombre,
+      municipio: remoto.municipio ?? datosMina.municipio,
+      frentes: Array.isArray(remoto.frentes) && remoto.frentes.length > 0 ? remoto.frentes : datosMina.frentes,
+      capacidad_ton_vagoneta: Number(remoto.capacidad_ton_vagoneta) > 0
+        ? Number(remoto.capacidad_ton_vagoneta)
+        : datosMina.capacidad_ton_vagoneta,
+    }
+    escribir(datosMina, false)
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('mineair:configuracion-actualizada'))
+  } catch {
+    // Usar la copia local si el backend no estÃ¡ disponible.
+  }
   return datosMina
 }
 

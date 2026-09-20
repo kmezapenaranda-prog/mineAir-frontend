@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   UMBRALES_DEFAULT,
@@ -8,7 +8,7 @@ import {
   actualizarCortes,
   restaurarUmbralesPorDefecto,
 } from '../config/umbrales.js'
-import { getDatosMina, guardarDatosMina, agregarFrente, eliminarFrente } from '../config/mina.js'
+import { getDatosMina, guardarDatosMina, sincronizarDatosMina, agregarFrente, eliminarFrente } from '../config/mina.js'
 // NODOS/actualizarActivoNodo son metadata de configuración del prototipo,
 // fuera del contrato de telemetría intercambiable (igual que
 // getEstadoRepetidores en Mapa.jsx) — alta/baja no depende de si la fuente
@@ -66,6 +66,14 @@ function SeccionDatosMina() {
   const [capacidadVagoneta, setCapacidadVagoneta] = useState(datos.capacidad_ton_vagoneta)
   const [guardadoEn, setGuardadoEn] = useState(null)
 
+  useEffect(() => {
+    void sincronizarDatosMina().then((remoto) => {
+      setNombre(remoto.nombre)
+      setMunicipio(remoto.municipio)
+      setCapacidadVagoneta(remoto.capacidad_ton_vagoneta)
+    })
+  }, [])
+
   function guardar() {
     const capacidad = Number(capacidadVagoneta)
     guardarDatosMina({
@@ -122,6 +130,10 @@ function SeccionFrentes() {
   const [nombreNuevo, setNombreNuevo] = useState('')
   const [mantoNuevo, setMantoNuevo] = useState('')
   const [confirmarBaja, setConfirmarBaja] = useState(null)
+
+  useEffect(() => {
+    void sincronizarDatosMina().then((remoto) => setFrentes(remoto.frentes))
+  }, [])
 
   function agregar() {
     if (!nombreNuevo.trim()) return
