@@ -196,6 +196,8 @@ export function clasificarPrediccion(probabilidad, cortes = CORTES_NIVEL_PREDICC
 // v2 invalida overrides creados sobre los límites regulatorios incorrectos
 // anteriores a contrato v1.4 (CO 50/H2S 20). No deben sobrevivir en silencio.
 const STORAGE_KEY = 'mineair.config_umbrales.v2'
+const CONFIG_API = import.meta.env?.VITE_EDGE_API_URL ?? 'https://mineair-backend-production.up.railway.app/api'
+let ultimaPublicacion = Promise.resolve()
 
 function storageDisponible() {
   try {
@@ -215,7 +217,7 @@ function cargarOverrides() {
   }
 }
 
-function guardarOverrides() {
+function guardarOverrides(publicar = true) {
   if (!storageDisponible()) return
   try {
     const limites = Object.fromEntries(Object.entries(UMBRALES_DEFAULT).map(([gas, u]) => [gas, u.limite]))
@@ -226,6 +228,24 @@ function guardarOverrides() {
   } catch {
     // Almacenamiento lleno o no disponible: los cambios siguen activos en
     // memoria para esta sesión aunque no persistan entre recargas.
+  }
+  if (publicar) {
+    const limites = Object.fromEntries(Object.entries(UMBRALES_DEFAULT).map(([gas, u]) => [gas, u.limite]))
+    ultimaPublicacion = publicarConfiguracion({ limites, cortesLectura: CORTES_NIVEL_LECTURA, cortesPrediccion: CORTES_NIVEL_PREDICCION })
+  }
+}
+
+async function publicarConfiguracion(umbrales) {
+  try {
+    const respuesta = await fetch(`${CONFIG_API}/configuracion`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ umbrales }),
+      signal: AbortSignal.timeout(15000),
+    })
+    if (!respuesta.ok) throw new Error(`No se pudo sincronizar los umbrales (${respuesta.status})`)
+  } catch {
+    // La copia local permite continuar sin red.
   }
 }
 
@@ -248,6 +268,24 @@ export function actualizarLimiteUmbral(gas, limite) {
   if (!UMBRALES_DEFAULT[gas] || !Number.isFinite(limite) || limite <= 0) return
   UMBRALES_DEFAULT[gas].limite = limite
   guardarOverrides()
+}
+
+export async function sincronizarUmbrales() {
+  await ultimaPublicacion
+  try {
+    const respuesta = await fetch(`${CONFIG_API}/configuracion`, { signal: AbortSignal.timeout(15000) })
+    if (!respuesta.ok) return
+    const remoto = (await respuesta.json()).configuracion?.umbrales
+    if (!remoto || typeof remoto !== 'object') return
+    for (const [gas, limite] of Object.entries(remoto.limites ?? {})) {
+      if (UMBRALES_DEFAULT[gas] && typeof limite === 'number' && Number.isFinite(limite)) UMBRALES_DEFAULT[gas].limite = limite
+    }
+    if (remoto.cortesLectura) Object.assign(CORTES_NIVEL_LECTURA, remoto.cortesLectura)
+    if (remoto.cortesPrediccion) Object.assign(CORTES_NIVEL_PREDICCION, remoto.cortesPrediccion)
+    guardarOverrides(false)
+  } catch {
+    // Usar la copia local si el backend no estÃ¡ disponible.
+  }
 }
 
 /** Edita los cortes de nivel (lectura o predicción). `precaucion` debe ser < `alarma`. */

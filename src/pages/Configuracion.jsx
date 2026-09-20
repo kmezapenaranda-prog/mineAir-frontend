@@ -6,6 +6,7 @@ import {
   CORTES_NIVEL_PREDICCION,
   actualizarLimiteUmbral,
   actualizarCortes,
+  sincronizarUmbrales,
   restaurarUmbralesPorDefecto,
 } from '../config/umbrales.js'
 import { getDatosMina, guardarDatosMina, sincronizarDatosMina, agregarFrente, eliminarFrente } from '../config/mina.js'
@@ -411,6 +412,12 @@ function SeccionCortes() {
 }
 
 export default function Configuracion() {
+  const [, actualizarVista] = useState(0)
+
+  useEffect(() => {
+    void sincronizarUmbrales().then(() => actualizarVista((version) => version + 1))
+  }, [])
+
   return (
     <div className="animate-enter flex flex-col gap-5">
       <div>
