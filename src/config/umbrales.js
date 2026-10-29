@@ -196,7 +196,7 @@ export function clasificarPrediccion(probabilidad, cortes = CORTES_NIVEL_PREDICC
 // v2 invalida overrides creados sobre los límites regulatorios incorrectos
 // anteriores a contrato v1.4 (CO 50/H2S 20). No deben sobrevivir en silencio.
 const STORAGE_KEY = 'mineair.config_umbrales.v2'
-const CONFIG_API = import.meta.env?.VITE_EDGE_API_URL ?? 'https://mineair-backend-production.up.railway.app/api'
+const CONFIG_API = import.meta.env?.VITE_EDGE_API_URL ?? 'https://mineair-backend.vercel.app/api'
 let ultimaPublicacion = Promise.resolve()
 
 function storageDisponible() {

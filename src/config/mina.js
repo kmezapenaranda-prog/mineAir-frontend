@@ -5,7 +5,7 @@
  * cambiar los frentes acá los propaga automáticamente al formulario.
  */
 const STORAGE_KEY = 'mineair.config_mina.v1'
-const CONFIG_API = import.meta.env?.VITE_EDGE_API_URL ?? 'https://mineair-backend-production.up.railway.app/api'
+const CONFIG_API = import.meta.env?.VITE_EDGE_API_URL ?? 'https://mineair-backend.vercel.app/api'
 let ultimaPublicacion = Promise.resolve()
 
 const DATOS_MINA_DEFECTO = Object.freeze({
